@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block body %}<div class="crumb"><a href="/companies">Sociétés</a> / <a href="/companies/{{r.company_id}}">{{ r.cname }}</a> /</div>
+<h1>Revue fiscale {{ r.year }} — {{ r.cname }}</h1><div class="sub">{{ 'Clôturée' if r.closed else 'Ouverte' }} · échéance {{ r.due or '—' }}</div>
+<div class="card"><h2>Réconciliation résultat comptable → résultat fiscal (IS)</h2><div class="recon">
+<div><span>Résultat comptable</span><b>{{ rc.res|eur }}</b></div><div><span>+ Réintégrations</span><b>{{ rc.reint|eur }}</b></div><div><span>− Déductions</span><b>{{ rc.deduc|eur }}</b></div>
+<div><span>= Résultat fiscal</span><b>{{ rc.fiscal|eur }}</b></div><div><span>Impôts différés</span><b>{{ rc.ids|eur }}</b></div></div>
+{% if me.role in ('admin','tax') and not r.closed %}<form method="post" action="/reviews/{{r.id}}/result" style="margin-top:12px;display:flex;gap:8px;max-width:420px"><input type="hidden" name="_csrf" value="{{csrf}}"><input name="res" value="{{ r.accounting_result|int }}"><button class="btn sec sm">Mettre à jour le résultat comptable</button></form>{% endif %}</div>
+<form class="bar" method="get"><select name="status" onchange="this.form.submit()"><option value="">Tous statuts</option>{% for k,v in STATUS.items() %}<option value="{{k}}" {{'selected' if flt.status==k}}>{{v}}</option>{% endfor %}</select>
+<select name="risk" onchange="this.form.submit()"><option value="">Tous risques</option>{% for x in RISKS %}<option {{'selected' if flt.risk==x}}>{{x}}</option>{% endfor %}</select>
+<select name="cat" onchange="this.form.submit()"><option value="">Charges et produits</option><option value="charge" {{'selected' if flt.cat=='charge'}}>Charges</option><option value="produit" {{'selected' if flt.cat=='produit'}}>Produits</option></select><span class="sp"></span>
+<a class="btn sec" href="/reviews/{{r.id}}/export.xlsx">Export Excel</a>
+{% if me.role in ('admin','tax') and not r.closed %}<a class="btn" href="/reviews/{{r.id}}/positions/new">+ Nouvelle position</a>{% endif %}</form>
+<div class="card"><table><tr><th>#</th><th>Sujet</th><th>Nature</th><th class="num">Montant</th><th>Déductibilité</th><th>Retraitement</th><th>Risque</th><th>Statut</th></tr>
+{% for p in pos %}<tr><td>{{p.id}}</td><td><a href="/positions/{{p.id}}">{{ p.subject }}</a><div class="mut">{{ p.tax_type }} · v{{ p.version }}</div></td><td>{{ p.category|capitalize }}</td><td class="num">{{ p.amount|eur }}</td><td>{{ p.deductibility }}</td>
+<td>{% if p.adj_type=='reint' %}+ {{ p.adj_amount|eur }}{% elif p.adj_type=='deduc' %}− {{ p.adj_amount|eur }}{% else %}—{% endif %}</td>
+<td><span class="tag r-{{p.risk}}">{{ p.risk }}</span></td><td><span class="tag s-{{p.status}}">{{ STATUS[p.status] }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="mut">Aucune position.</td></tr>{% endfor %}</table></div>
+{% if can_close and me.role in ('admin','tax') %}<form method="post" action="/reviews/{{r.id}}/close"><input type="hidden" name="_csrf" value="{{csrf}}"><button class="btn ok">Clôturer la revue (toutes les positions sont certifiées)</button></form>{% endif %}{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}<div class="crumb"><a href="/companies">Sociétés</a> /</div><h1>{{ c.name }}</h1><div class="sub">SIREN {{ c.siren or '—' }} · clôture {{ c.closing or '—' }} · {{ c.regime }}</div>
+<div class="card"><h2>Revues fiscales</h2>{% if revs %}<table><tr><th>Exercice</th><th>Échéance</th><th class="num">Résultat comptable</th><th class="num">Positions</th><th class="num">Certifiées</th><th>État</th></tr>
+{% for r in revs %}<tr><td><a href="/reviews/{{r.id}}">Revue fiscale {{ r.year }}</a></td><td>{{ r.due or '—' }}</td><td class="num">{{ r.accounting_result|eur }}</td><td class="num">{{ r.n }}</td><td class="num">{{ r.ncert }}/{{ r.n }}</td><td>{{ 'Clôturée' if r.closed else 'Ouverte' }}</td></tr>{% endfor %}</table>{% else %}<div class="mut">Aucune revue.</div>{% endif %}</div>
+{% if me.role in ('admin','tax') %}<div class="card"><h2>Nouvelle revue fiscale</h2><form method="post"><input type="hidden" name="_csrf" value="{{csrf}}"><div class="row r3">
+<div class="f"><label>Exercice</label><input name="year" type="number" value="{{ year }}" required></div><div class="f"><label>Échéance</label><input name="due" type="date"></div>
+<div class="f"><label>Résultat comptable (€)</label><input name="res" value="0"></div></div><button class="btn">Créer</button></form></div>{% endif %}{% endblock %}

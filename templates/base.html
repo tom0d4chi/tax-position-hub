@@ -1,0 +1,10 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Tax Position Hub{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+{% if me %}<header><a class="brand" href="/">Tax Position Hub</a>
+<a href="/" class="{{ 'on' if request.endpoint=='dashboard' }}">Tableau de bord</a>
+<a href="/companies" class="{{ 'on' if request.endpoint in ('companies','company','review') }}">Sociétés</a>
+<a href="/certifications" class="{{ 'on' if request.endpoint=='certifications' }}">À certifier</a>
+{% if me.role=='admin' %}<a href="/users">Utilisateurs</a>{% endif %}
+<span class="sp"></span><a href="/password">{{ me.name }} · {{ ROLES[me.role].split(' /')[0] }}</a>
+<form method="post" action="/logout"><input type="hidden" name="_csrf" value="{{ csrf }}"><button>Déconnexion</button></form></header>{% endif %}
+<main>{% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}{% block body %}{% endblock %}</main></body></html>

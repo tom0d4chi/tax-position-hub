@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}<h1>Sociétés</h1><div class="sub">{{ rows|length }} société(s)</div>
+<div class="card"><table><tr><th>Société</th><th>SIREN</th><th>Clôture</th><th>Régime</th><th class="num">Revues</th><th class="num">Positions</th><th class="num">Certifiées</th><th class="num">Risque élevé</th></tr>
+{% for c in rows %}<tr><td><a href="/companies/{{c.id}}">{{ c.name }}</a></td><td>{{ c.siren }}</td><td>{{ c.closing }}</td><td>{{ c.regime }}</td><td class="num">{{ c.nrev }}</td><td class="num">{{ c.npos }}</td><td class="num">{{ c.ncert }}</td><td class="num">{% if c.nhigh %}<span class="tag r-Élevé">{{ c.nhigh }}</span>{% else %}0{% endif %}</td></tr>{% endfor %}</table></div>
+{% if me.role in ('admin','tax') %}<div class="card"><h2>Nouvelle société</h2><form method="post"><input type="hidden" name="_csrf" value="{{csrf}}">
+<div class="row r2"><div class="f"><label>Raison sociale *</label><input name="name" required></div><div class="f"><label>SIREN</label><input name="siren"></div></div>
+<div class="row r2"><div class="f"><label>Date de clôture</label><input name="closing" placeholder="31/12"></div><div class="f"><label>Régime</label><select name="regime"><option>IS - réel normal</option><option>IS - réel simplifié</option><option>Intégration fiscale (mère)</option><option>Intégration fiscale (filiale)</option></select></div></div>
+<button class="btn">Créer</button></form></div>{% endif %}{% endblock %}

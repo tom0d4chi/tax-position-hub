@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block body %}<h1>À certifier</h1><div class="sub">Positions soumises en attente de décision du comptable</div>
+<div class="card"><table><tr><th>Société</th><th>Exercice</th><th>Position</th><th class="num">Montant</th><th>Risque</th><th>Soumise le</th></tr>
+{% for p in rows %}<tr><td>{{ p.cname }}</td><td>{{ p.year }}</td><td><a href="/positions/{{p.id}}">{{ p.subject }}</a></td><td class="num">{{ p.amount|eur }}</td><td><span class="tag r-{{p.risk}}">{{ p.risk }}</span></td><td>{{ p.updated }}</td></tr>
+{% else %}<tr><td colspan="6" class="mut">Rien en attente.</td></tr>{% endfor %}</table></div>{% endblock %}

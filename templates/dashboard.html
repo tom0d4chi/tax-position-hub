@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block body %}
+{% macro plist(items) %}{% if items %}<table>{% for p in items[:6] %}<tr><td><a href="/positions/{{p.id}}">{{ p.subject }}</a><div class="mut">{{ p.cname }} · {{ p.year }}</div></td><td class="num">{{ p.amount|eur }}</td></tr>{% endfor %}</table>{% if items|length>6 %}<div class="mut">+ {{ items|length-6 }} autres</div>{% endif %}{% else %}<div class="mut">Rien à signaler.</div>{% endif %}{% endmacro %}
+<h1>Tableau de bord</h1><div class="sub">Vue d'ensemble des positions fiscales</div>
+<div class="grid g4"><div class="card kpi"><div class="n">{{ ncomp }}</div><div class="l">Sociétés</div></div>
+<div class="card kpi"><div class="n">{{ nrev }}</div><div class="l">Revues ouvertes</div></div>
+<div class="card kpi"><div class="n">{{ total }}</div><div class="l">Positions</div></div>
+<div class="card kpi"><div class="n" style="color:var(--bad)">{{ high|length }}</div><div class="l">Risque élevé non certifié</div></div></div>
+<div class="card"><h2>Avancement</h2><div style="display:flex;gap:10px;flex-wrap:wrap">{% for k,v in STATUS.items() %}<span class="tag s-{{k}}">{{ v }} : {{ st[k] }}</span>{% endfor %}</div></div>
+<div class="grid g2">
+<div class="card"><h2>En attente de certification ({{ toc|length }})</h2>{{ plist(toc) }}</div>
+<div class="card"><h2>Points à risque élevé ({{ high|length }})</h2>{{ plist(high) }}</div>
+<div class="card"><h2>Positions rejetées ({{ rejected|length }})</h2>{{ plist(rejected) }}</div>
+<div class="card"><h2>Positions incomplètes ({{ incomplete|length }})</h2>{{ plist(incomplete) }}</div></div>
+{% endblock %}

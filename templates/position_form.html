@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block body %}<div class="crumb"><a href="/reviews/{{r.id}}">Revue {{ r.year }} — {{ r.cname }}</a> /</div>
+<h1>{{ 'Nouvelle position fiscale' if new else 'Modifier la position' }}</h1><div class="sub">{{ r.cname }} · exercice {{ r.year }}</div>
+{% if not new and p.status=='certified' %}<div class="flash">Cette position est certifiée : toute modification crée une nouvelle version et retire la certification.</div>{% endif %}
+<form method="post" class="card"><input type="hidden" name="_csrf" value="{{csrf}}">
+<div class="sec-t" style="margin-top:0">Identification</div>
+<div class="row r3"><div class="f"><label>Sujet *</label><input name="subject" value="{{ p.subject or '' }}" required></div>
+<div class="f"><label>Type d'impôt</label><select name="tax_type">{% for t in TAXES %}<option {{'selected' if p.tax_type==t}}>{{t}}</option>{% endfor %}</select></div>
+<div class="f"><label>Charge ou produit</label><select name="category"><option value="charge" {{'selected' if p.category=='charge'}}>Charge</option><option value="produit" {{'selected' if p.category=='produit'}}>Produit</option></select></div></div>
+<div class="row r3"><div class="f"><label>Compte comptable</label><input name="account" value="{{ p.account or '' }}" placeholder="ex. 6257"></div>
+<div class="f"><label>Montant concerné (€)</label><input name="amount" value="{{ p.amount|int if p.amount else 0 }}"></div>
+<div class="f"><label>Risque</label><select name="risk">{% for x in RISKS %}<option {{'selected' if p.risk==x}}>{{x}}</option>{% endfor %}</select></div></div>
+<div class="sec-t">Analyse fiscale</div>
+<div class="f"><label>Question fiscale</label><textarea name="question">{{ p.question or '' }}</textarea></div>
+<div class="f"><label>Faits en l'espèce</label><textarea name="facts">{{ p.facts or '' }}</textarea></div>
+<div class="f"><label>Base légale (CGI, BOFiP, jurisprudence)</label><textarea name="legal_basis" style="min-height:56px">{{ p.legal_basis or '' }}</textarea></div>
+<div class="f"><label>Conclusion / position retenue</label><textarea name="conclusion">{{ p.conclusion or '' }}</textarea></div>
+<div class="sec-t">Retraitement extra-comptable</div>
+<div class="row r3"><div class="f"><label>Déductibilité</label><select name="deductibility">{% for x in DEDUCT %}<option {{'selected' if p.deductibility==x}}>{{x}}</option>{% endfor %}</select></div>
+<div class="f"><label>Retraitement</label><select name="adj_type">{% for k,v in ADJ %}<option value="{{k}}" {{'selected' if p.adj_type==k}}>{{v}}</option>{% endfor %}</select></div>
+<div class="f"><label>Montant du retraitement (€)</label><input name="adj_amount" value="{{ p.adj_amount|int if p.adj_amount else 0 }}"></div></div>
+<div class="sec-t">Impôts différés</div>
+<div class="row r3"><div class="f"><label>Nature de différence</label><select name="diff_nature"><option {{'selected' if p.diff_nature=='Permanente'}}>Permanente</option><option {{'selected' if p.diff_nature=='Temporaire'}}>Temporaire</option></select></div>
+<div class="f"><label>Taux ID (%)</label><input name="rate" value="{{ p.rate if p.rate is not none else 25 }}"></div>
+<div class="f"><label>Impôt différé calculé</label><input readonly value="{{ deferred(p)|eur if p.adj_type is defined else '—' }}" title="Calculé à l'enregistrement : montant du retraitement × taux (différence temporaire uniquement)"></div></div>
+<a class="btn sec" href="{{ '/reviews/%d'%r.id if new else '/positions/%d'%pid }}">Annuler</a> <button class="btn">{{ 'Créer la position' if new else 'Enregistrer' }}</button></form>{% endblock %}

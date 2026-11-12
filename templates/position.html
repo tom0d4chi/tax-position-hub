@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block body %}<div class="crumb"><a href="/reviews/{{p.rid}}">Revue {{ p.year }} — {{ p.cname }}</a> /</div>
+<h1>{{ p.subject }}</h1><div class="sub"><span class="tag s-{{p.status}}">{{ STATUS[p.status] }}</span> <span class="tag r-{{p.risk}}">Risque {{ p.risk }}</span> {{ p.tax_type }} · {{ p.category }} · version {{ p.version }} · propriétaire {{ p.owner }}</div>
+<div class="bar">{% if can_edit %}<a class="btn sec" href="/positions/{{p.id}}/edit">Modifier</a>{% endif %}
+{% if me.role in ('admin','tax') and p.status in ('draft','rejected') and not p.closed %}<form method="post" action="/positions/{{p.id}}/submit"><input type="hidden" name="_csrf" value="{{csrf}}"><button class="btn">Soumettre au comptable</button></form>{% if miss %}<span class="mut">Manque : {{ miss|join(', ') }}</span>{% endif %}{% endif %}</div>
+<div class="grid g2"><div>
+<div class="card"><h2>Analyse fiscale</h2><div class="sec-t" style="margin-top:0">Question fiscale</div><div class="pre">{{ p.question or '—' }}</div>
+<div class="sec-t">Faits en l'espèce</div><div class="pre">{{ p.facts or '—' }}</div><div class="sec-t">Base légale</div><div class="pre">{{ p.legal_basis or '—' }}</div>
+<div class="sec-t">Conclusion / position retenue</div><div class="pre">{{ p.conclusion or '—' }}</div></div>
+<div class="card"><h2>Retraitement</h2><table><tr><td>Compte</td><td>{{ p.account or '—' }}</td></tr><tr><td>Montant concerné</td><td>{{ p.amount|eur }}</td></tr><tr><td>Déductibilité</td><td>{{ p.deductibility }}</td></tr>
+<tr><td>Retraitement</td><td>{{ adjl[p.adj_type] }}{% if p.adj_type!='none' %} : {{ p.adj_amount|eur }}{% endif %}</td></tr><tr><td>Différence</td><td>{{ p.diff_nature }} · taux {{ p.rate }} %</td></tr><tr><td>Impôt différé calculé</td><td><b>{{ idv|eur }}</b></td></tr></table></div></div>
+<div><div class="card"><h2>Certification comptable</h2>
+{% if p.status=='certified' %}<div class="tag s-certified">Certifiée par {{ p.certifier }} le {{ p.certified_at }}</div><p><b>Traitement final en liasse :</b> {{ p.final_treatment }}</p>{% if p.rc_note %}<p class="pre">{{ p.rc_note }}</p>{% endif %}
+{% elif p.status=='rejected' %}<div class="tag s-rejected">Rejetée par {{ p.certifier }} le {{ p.certified_at }}</div><p class="pre">{{ p.rc_note }}</p>
+{% elif p.status=='submitted' %}<div class="lock">En attente de décision du responsable comptable. La position est verrouillée.</div>
+{% if me.role in ('admin','rc') %}<form method="post" action="/positions/{{p.id}}/decide"><input type="hidden" name="_csrf" value="{{csrf}}">
+<div class="f"><label>Traitement final en liasse</label><input name="final_treatment" placeholder="Ex. 2058-A, ligne WE"></div>
+<div class="f"><label>Commentaire / motif de rejet</label><textarea name="rc_note" style="min-height:60px"></textarea></div>
+<button class="btn ok" name="decision" value="certify">Certifier</button> <button class="btn bad" name="decision" value="reject">Rejeter</button></form>{% endif %}
+{% else %}<div class="mut">Pas encore soumise.</div>{% endif %}</div>
+<div class="card" id="comments"><h2>Commentaires</h2><div class="mut" style="margin-bottom:10px">Le comptable peut commenter mais ne modifie pas la position Tax.</div>
+{% for c in com %}<div class="cm {{ 'rc' if c.role=='rc' }}"><b>{{ c.name }}</b> <small>{{ c.ts }}</small><div class="pre">{{ c.body }}</div></div>{% else %}<div class="mut">Aucun commentaire.</div>{% endfor %}
+{% if me.role!='viewer' %}<form method="post" action="/positions/{{p.id}}/comment"><input type="hidden" name="_csrf" value="{{csrf}}"><textarea name="body" style="min-height:56px" required></textarea><br><br><button class="btn sm">Commenter</button></form>{% endif %}</div>
+<div class="card"><h2>Pièces jointes</h2>{% for f in files %}<div><a href="/files/{{f.id}}">{{ f.name }}</a> <span class="mut">{{ f.uname }} · {{ f.ts }}</span></div>{% else %}<div class="mut">Aucune.</div>{% endfor %}
+{% if me.role!='viewer' %}<form method="post" action="/positions/{{p.id}}/upload" enctype="multipart/form-data" style="margin-top:10px"><input type="hidden" name="_csrf" value="{{csrf}}"><input type="file" name="file" required><br><br><button class="btn sec sm">Ajouter</button></form>{% endif %}</div></div></div>
+<div class="card"><h2>Historique</h2><table>{% for h in hist %}<tr><td style="width:140px">{{ h.ts }}</td><td style="width:140px">{{ h.name or '—' }}</td><td style="width:240px"><b>{{ h.action }}</b></td><td class="mut" style="word-break:break-word">{{ h.detail }}</td></tr>{% endfor %}</table></div>{% endblock %}
